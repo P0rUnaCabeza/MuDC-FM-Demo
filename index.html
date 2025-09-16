@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MuDC-FM<br>Fourier-Domain Residual Flow Matching for Lossy Music Codec Restoration</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const sections = document.querySelectorAll('main > section[id]');
+    const navLinks = document.querySelectorAll('nav a[href^="#"]');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const id = entry.target.id;
+        const link = document.querySelector(`nav a[href="#${id}"]`);
+        if (entry.isIntersecting) {
+          navLinks.forEach(a => a.classList.remove('active'));
+          link && link.classList.add('active');
+        }
+      });
+    }, {
+      root: null,
+      rootMargin: '0px 0px -60% 0px', 
+      threshold: 0
+    });
+
+    sections.forEach(sec => observer.observe(sec));
+  });
+</script>
+<script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+  id="MathJax-script"
+  async>
+</script>
+
+<body>
+
+  <header>
+    <h1 class="main-title">
+    <span class="main-title__line1">MuDC-FM</span><br>
+    <span class="main-title__line2">
+        Fourier-Domain Residual Flow Matching for Lossy Music Codec Restoration
+    </span>
+    </h1>
+     <div class="authors">
+    <p>
+      <span class="author"> Yujun Song<sup>1</sup>, Penghao He<sup>1</sup>, Ganghui Ru<sup>1</sup></span>,
+      <span class="author">Wei Li<sup>2</sup><sup class="corr">*</sup></span>
+    </p>
+    <p class="affiliations">
+      <sup>1</sup>College of Computer Science and Artificial Intelligence, Fudan University, Shanghai, China<br/>
+      <sup>2</sup>Shanghai Key Laboratory of Intelligent Information Processing, Fudan University, Shanghai, China
+    </p>
+    <p class="corr-info">
+      <sup class="corr">*</sup>Corresponding author
+      <!-- <a href="mailto:jane.doe@univa.edu">jane.doe@univa.edu</a> -->
+    </p>
+    
+  </header>
+    <nav>
+    <ul>
+        <li><a href="#abstract">Abstract</a></li>
+        <li><a href="#method-overview">Method Overview</a></li>
+        <li><a href="#performance-comparison">Performance Comparison</a></li>
+        <li><a href="#audio-demo">Audio Demo</a></li>
+    </ul>
+    </nav>
+    <main>
+    <section id="abstract">
+      <h2>Abstract</h2>
+      <p>
+       Lossy codecs erase high frequencies and introduce pre-echo and smearing. We present MuDC-FM, the first framework to cast music de-codec enhancement as Fourier-domain residual flow matching. Conditioned on MP3 log-magnitude and phase, our model predicts a complex residual velocity
+        field along a linear path from codec output to clean residual, enabling single- or multi-step, non-autoregressive reconstruction via ISTFT. Training is purely perceptual—multi-resolution STFT, CQT, and Mel losses—augmented by complex-domain consistency; MP3 artifacts are synthesized on-the-fly at multiple bitrates for robustness. Segmented inference with Hann crossfades and GCC-PHAT alignment yields seamless, low-latency restoration. On diverse music, MuDC-FM improves PSD correlation, SDR, and SI-SNR over strong baselines, with clear suppression of codec artifacts and faithful high-frequency recovery.
+      </p>
+    </section>
+
+    <section id="method-overview">
+      <h2>Method Overview</h2>
+      <figure>
+        <img class="responsive-img"   src="assets/images/model_architecture.png" alt="Model Architecture" />
+        <figcaption>Figure 1: Overall Architecture of the Proposed Method.</figcaption>
+      </figure>
+      <p>
+        In Figure 1, \(X_t\) represents the intermediate sampling step during training or inference, \(C\) denotes the conditions injected into the model (i.e., the lossy MP3 spectrogram), \(t\) is the sinusoidal time embedding, and \(V_t\) is the flow-matching velocity field predicted by the model. During training, following the basic flow-matching theory, noisy sampling is performed on the actual residual masked by the compression algorithm to supervise the output velocity field of the model. During inference, the process starts from simple Gaussian noise, and the velocity field output by the model is used for progressive sampling. After inference, the output residual is added to the initial condition (the MP3 spectrogram) to obtain the complete spectrogram, which is then converted to an audio waveform via iSTFT.
+     </p>
+    </section>
+
+    <section id="performance-comparison">
+      <h2>Performance Comparison</h2>
+      <figure>
+        <img  
+        class="responsive-img"  
+        src="assets/images/performance_table.png"  
+        alt="Performance Comparison Table"  
+        />
+        <figcaption>Table 1: Performance Comparison of Compressed Audio Restoration Methods.</figcaption>
+      </figure>
+      <p>
+       MuDC-FM demonstrates consistent and comprehensive superiority over existing compressed audio restoration methods across all tested scenarios. Regardless of the compression bitrate (128kbps, 96kbps, or 64kbps), it consistently outperforms Apollo<sup><a href="#ref1">[1]</a></sup> and SR-GAN<sup><a href="#ref2">[2]</a></sup> in both perceptual quality (MOS) and objective fidelity metrics (SDR, SI-SNR, PESQ). This uniform dominance across diverse compression conditions underscores its robustness and adaptability to varying degrees of information loss.
+        </p>
+    </section>
+
+    <section id="audio-demo">
+      <h2>Audio Demo</h2>
+      <p>
+        Listen to restoration results at different MP3 bitrates. For each bitrate, we present three samples. In each sample, Ground Truth, compressed MP3, and our restored output are presented, along with their spectrogram.
+      </p>
+      <!-- 64 kbps -->
+      <div class="demo-group" id="demo-64">
+        <h3>64 kbps</h3>
+
+        <!-- Sample 1 -->
+        <div class="demo-item">
+            <h4>Sample 1</h4>
+
+            <!-- audio players row -->
+            <div class="demo-row audio-row">
+            <div class="demo-col">
+                <p class="label">Ground Truth</p>
+                <audio controls>
+                <source src="assets/audio/64_gt_1.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Compressed MP3</p>
+                <audio controls>
+                <source src="assets/audio/64_mp3_1.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Restored</p>
+                <audio controls>
+                <source src="assets/audio/64_restored_1.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            </div>
+
+            <!-- spectrograms row -->
+            <div class="demo-row spectrogram-row">
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_64_gt_1.png" alt="GT Spectrogram 64 Sample 1" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_64_mp3_1.png" alt="MP3 Spectrogram 64 Sample 1" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_64_restored_1.png" alt="Restored Spectrogram 64 Sample 1" />
+            </div>
+            </div>
+        </div>
+
+        <!-- Sample 2 -->
+        <div class="demo-item">
+            <h4>Sample 2</h4>
+
+            <div class="demo-row audio-row">
+            <div class="demo-col">
+                <p class="label">Ground Truth</p>
+                <audio controls>
+                <source src="assets/audio/64_gt_2.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Compressed MP3</p>
+                <audio controls>
+                <source src="assets/audio/64_mp3_2.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Restored</p>
+                <audio controls>
+                <source src="assets/audio/64_restored_2.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            </div>
+
+            <div class="demo-row spectrogram-row">
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_64_gt_2.png" alt="GT Spectrogram 64 Sample 2" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_64_mp3_2.png" alt="MP3 Spectrogram 64 Sample 2" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_64_restored_2.png" alt="Restored Spectrogram 64 Sample 2" />
+            </div>
+            </div>
+        </div>
+
+        <!-- Sample 3 -->
+        <div class="demo-item">
+            <h4>Sample 3</h4>
+
+            <div class="demo-row audio-row">
+            <div class="demo-col">
+                <p class="label">Ground Truth</p>
+                <audio controls>
+                <source src="assets/audio/64_gt_3.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Compressed MP3</p>
+                <audio controls>
+                <source src="assets/audio/64_mp3_3.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Restored</p>
+                <audio controls>
+                <source src="assets/audio/64_restored_3.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            </div>
+
+            <div class="demo-row spectrogram-row">
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_64_gt_3.png" alt="GT Spectrogram 64 Sample 3" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_64_mp3_3.png" alt="MP3 Spectrogram 64 Sample 3" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_64_restored_3.png" alt="Restored Spectrogram 64 Sample 3" />
+            </div>
+            </div>
+        </div>
+        </div>
+
+
+
+      <!-- 96 kbps -->
+      <div class="demo-group" id="demo-96">
+        <h3>96 kbps</h3>
+
+        <!-- Sample 1 -->
+        <div class="demo-item">
+            <h4>Sample 1</h4>
+            <div class="demo-row audio-row">
+            <div class="demo-col">
+                <p class="label">Ground Truth</p>
+                <audio controls>
+                <source src="assets/audio/96_gt_1.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Compressed MP3</p>
+                <audio controls>
+                <source src="assets/audio/96_mp3_1.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Restored</p>
+                <audio controls>
+                <source src="assets/audio/96_restored_1.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            </div>
+            <div class="demo-row spectrogram-row">
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_96_gt_1.png" alt="GT Spectrogram 96 Sample 1" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_96_mp3_1.png" alt="MP3 Spectrogram 96 Sample 1" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_96_restored_1.png" alt="Restored Spectrogram 96 Sample 1" />
+            </div>
+            </div>
+        </div>
+
+        <!-- Sample 2 -->
+        <div class="demo-item">
+            <h4>Sample 2</h4>
+            <div class="demo-row audio-row">
+            <div class="demo-col">
+                <p class="label">Ground Truth</p>
+                <audio controls>
+                <source src="assets/audio/96_gt_2.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Compressed MP3</p>
+                <audio controls>
+                <source src="assets/audio/96_mp3_2.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Restored</p>
+                <audio controls>
+                <source src="assets/audio/96_restored_2.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            </div>
+            <div class="demo-row spectrogram-row">
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_96_gt_2.png" alt="GT Spectrogram 96 Sample 2" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_96_mp3_2.png" alt="MP3 Spectrogram 96 Sample 2" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_96_restored_2.png" alt="Restored Spectrogram 96 Sample 2" />
+            </div>
+            </div>
+        </div>
+
+        <!-- Sample 3 -->
+        <div class="demo-item">
+            <h4>Sample 3</h4>
+            <div class="demo-row audio-row">
+            <div class="demo-col">
+                <p class="label">Ground Truth</p>
+                <audio controls>
+                <source src="assets/audio/96_gt_3.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Compressed MP3</p>
+                <audio controls>
+                <source src="assets/audio/96_mp3_3.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Restored</p>
+                <audio controls>
+                <source src="assets/audio/96_restored_3.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            </div>
+            <div class="demo-row spectrogram-row">
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_96_gt_3.png" alt="GT Spectrogram 96 Sample 3" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_96_mp3_3.png" alt="MP3 Spectrogram 96 Sample 3" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_96_restored_3.png" alt="Restored Spectrogram 96 Sample 3" />
+            </div>
+            </div>
+        </div>
+        </div>
+
+
+
+      <!-- 128 kbps -->
+      <div class="demo-group" id="demo-128">
+        <h3>128 kbps</h3>
+
+        <!-- Sample 1 -->
+        <div class="demo-item">
+            <h4>Sample 1</h4>
+            <div class="demo-row audio-row">
+            <div class="demo-col">
+                <p class="label">Ground Truth</p>
+                <audio controls>
+                <source src="assets/audio/128_gt_1.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Compressed MP3</p>
+                <audio controls>
+                <source src="assets/audio/128_mp3_1.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Restored</p>
+                <audio controls>
+                <source src="assets/audio/128_restored_1.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            </div>
+            <div class="demo-row spectrogram-row">
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_128_gt_1.png" alt="GT Spectrogram 128 Sample 1" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_128_mp3_1.png" alt="MP3 Spectrogram 128 Sample 1" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_128_restored_1.png" alt="Restored Spectrogram 128 Sample 1" />
+            </div>
+            </div>
+        </div>
+
+        <!-- Sample 2 -->
+        <div class="demo-item">
+            <h4>Sample 2</h4>
+            <div class="demo-row audio-row">
+            <div class="demo-col">
+                <p class="label">Ground Truth</p>
+                <audio controls>
+                <source src="assets/audio/128_gt_2.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Compressed MP3</p>
+                <audio controls>
+                <source src="assets/audio/128_mp3_2.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Restored</p>
+                <audio controls>
+                <source src="assets/audio/128_restored_2.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            </div>
+            <div class="demo-row spectrogram-row">
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_128_gt_2.png" alt="GT Spectrogram 128 Sample 2" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_128_mp3_2.png" alt="MP3 Spectrogram 128 Sample 2" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_128_restored_2.png" alt="Restored Spectrogram 128 Sample 2" />
+            </div>
+            </div>
+        </div>
+        <!-- Sample 3 -->
+        <div class="demo-item">
+            <h4>Sample 3</h4>
+            <div class="demo-row audio-row">
+            <div class="demo-col">
+                <p class="label">Ground Truth</p>
+                <audio controls>
+                <source src="assets/audio/128_gt_3.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Compressed MP3</p>
+                <audio controls>
+                <source src="assets/audio/128_mp3_3.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            <div class="demo-col">
+                <p class="label">Restored</p>
+                <audio controls>
+                <source src="assets/audio/128_restored_3.mp3" type="audio/mpeg" />
+                </audio>
+            </div>
+            </div>
+            <div class="demo-row spectrogram-row">
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_128_gt_3.png" alt="GT Spectrogram 128 Sample 3" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_128_mp3_3.png" alt="MP3 Spectrogram 128 Sample 3" />
+            </div>
+            <div class="demo-col">
+                <img src="assets/images/spectrogram_128_restored_3.png" alt="Restored Spectrogram 128 Sample 3" />
+            </div>
+            </div>
+        </div>
+        </div>
+
+
+    </section>
+  </main>
+    <section id="references">
+    <h2>References</h2>
+    <ol>
+        <li id="ref1">
+        Li, Kai & Luo, Yi. (2025). Apollo: Band-sequence Modeling for High-Quality Audio Restoration. 1-5. 10.1109/ICASSP49660.2025.10890825. 
+        </li>
+        <li id="ref2">
+        Lattner, Stefan & Nistal, Javier. (2021). Stochastic Restoration of Heavily Compressed Musical Audio Using Generative Adversarial Networks. Electronics. 10. 1349. 10.3390/electronics10111349. 
+        </li>
+    </ol>
+    </section>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
