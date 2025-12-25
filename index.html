@@ -47,11 +47,11 @@
      <div class="authors">
     <p>
       <span class="author"> Yujun Song<sup>1</sup>, Penghao He<sup>1</sup>, Ganghui Ru<sup>1</sup></span>,
-      <span class="author">Wei Li<sup>2</sup><sup class="corr">*</sup></span>
+      <span class="author">Wei Li<sup>12</sup><sup class="corr">*</sup></span>
     </p>
     <p class="affiliations">
-      <sup>1</sup>College of Computer Science and Artificial Intelligence, Fudan University, Shanghai, China<br/>
-      <sup>2</sup>Shanghai Key Laboratory of Intelligent Information Processing, Fudan University, Shanghai, China
+      <sup>1</sup>College of Computer Science and Artificial Intelligence, Fudan University, Shanghai 200438, China<br/>
+      <sup>2</sup>Shanghai Key Laboratory of Intelligent Information Processing, Fudan University, Shanghai 200433, China
     </p>
     <p class="corr-info">
       <sup class="corr">*</sup>Corresponding author
@@ -71,19 +71,18 @@
     <section id="abstract">
       <h2>Abstract</h2>
       <p>
-       Lossy codecs erase high frequencies and introduce pre-echo and smearing. We present MuDC-FM, the first framework to cast music de-codec enhancement as Fourier-domain residual flow matching. Conditioned on MP3 log-magnitude and phase, our model predicts a complex residual velocity
-        field along a linear path from codec output to clean residual, enabling single- or multi-step, non-autoregressive reconstruction via ISTFT. Training is purely perceptual—multi-resolution STFT, CQT, and Mel losses—augmented by complex-domain consistency; MP3 artifacts are synthesized on-the-fly at multiple bitrates for robustness. Segmented inference with Hann crossfades and GCC-PHAT alignment yields seamless, low-latency restoration. On diverse music, MuDC-FM improves PSD correlation, SDR, and SI-SNR over strong baselines, with clear suppression of codec artifacts and faithful high-frequency recovery.
+       Restoring high-fidelity audio from lossy compressions remains a critical challenge, as psychoacoustic models irreversibly discard time-frequency information. Existing solutions primarily rely on intricate Generative Adversarial Networks (GANs), which often struggle with training instability and the trade-off between perceptual quality and signal fidelity. In this paper, we propose <b>MuDC-FM</b>, a novel framework that reformulates music codec artifact removal as a Fourier-domain residual flow matching problem. Conditioned on the log-magnitude and phase of the compressed audio, our model predicts a complex-valued residual velocity field along a linear trajectory from the codec output to the clean target. This approach facilitates high-quality, non-autoregressive reconstruction via the Inverse Short-Time Fourier Transform (ISTFT) with few-step sampling. Experimental results demonstrate that MuDC-FM significantly outperforms state-of-the-art baselines, achieving a 60% &sim; 110% improvement in objective metrics while accelerating inference speed by 2&times; &sim; 4&times;.
       </p>
     </section>
 
     <section id="method-overview">
       <h2>Method Overview</h2>
       <figure>
-        <img class="responsive-img"   src="assets/images/model_architecture.png" alt="Model Architecture" />
+        <img class="responsive-img"   src="assets/images/MuDC-FM.png" alt="Model Architecture" />
         <figcaption>Figure 1: Overall Architecture of the Proposed Method.</figcaption>
       </figure>
       <p>
-        In Figure 1, \(X_t\) represents the intermediate sampling step during training or inference, \(C\) denotes the conditions injected into the model (i.e., the lossy MP3 spectrogram), \(t\) is the sinusoidal time embedding, and \(V_t\) is the flow-matching velocity field predicted by the model. During training, following the basic flow-matching theory, noisy sampling is performed on the actual residual masked by the compression algorithm to supervise the output velocity field of the model. During inference, the process starts from simple Gaussian noise, and the velocity field output by the model is used for progressive sampling. After inference, the output residual is added to the initial condition (the MP3 spectrogram) to obtain the complete spectrogram, which is then converted to an audio waveform via iSTFT.
+        Overview of the MuDC-FM framework. Here, <b>U</b><sub>t</sub> represents the intermediate spectral state during the flow process, <i>C</i> denotes the MP3 condition, <i>t</i> is the sinusoidal time embedding, and <i>V&#770;</i><sub>t</sub> is the predicted velocity field.
      </p>
     </section>
 
