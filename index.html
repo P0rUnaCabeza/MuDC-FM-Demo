@@ -71,7 +71,7 @@
     <section id="abstract">
       <h2>Abstract</h2>
       <p>
-       Restoring high-fidelity audio from lossy compressions remains a critical challenge, as psychoacoustic models irreversibly discard time-frequency information. Existing solutions primarily rely on intricate Generative Adversarial Networks (GANs), which often struggle with training instability and the trade-off between perceptual quality and signal fidelity. In this paper, we propose <b>MuDC-FM</b>, a novel framework that reformulates music codec artifact removal as a Fourier-domain residual flow matching problem. Conditioned on the log-magnitude and phase of the compressed audio, our model predicts a complex-valued residual velocity field along a linear trajectory from the codec output to the clean target. This approach facilitates high-quality, non-autoregressive reconstruction via the Inverse Short-Time Fourier Transform (ISTFT) with few-step sampling. Experimental results demonstrate that MuDC-FM significantly outperforms state-of-the-art baselines, achieving a 60% &sim; 110% improvement in objective metrics while accelerating inference speed by 2&times; &sim; 4&times;.
+       Restoring high-fidelity audio from lossy compressions remains a critical challenge, as psychoacoustic models irreversibly discard time-frequency information. Existing solutions primarily rely on intricate Generative Adversarial Networks (GANs), which often struggle with training instability and the trade-off between perceptual quality and signal fidelity. In this paper, we propose \textbf{MuDC-FM}, a novel framework that reformulates music codec artifact removal as a Fourier-domain residual flow matching problem. Conditioned on the log-magnitude and phase of the compressed audio, our model predicts a complex-valued residual velocity field along a linear trajectory from the codec output to the clean target. This approach facilitates high-quality, non-autoregressive reconstruction via the Inverse Short-Time Fourier Transform (ISTFT) with few-step sampling. Experimental results demonstrate that our method consistently outperforms GAN-based baselines, achieving 17\% $\sim$ 55\% improvement in objective metrics. Crucially, while delivering this superior fidelity, MuDC-FM maintains a real-time inference capability (RTF $\approx$ 0.14) that is orders of magnitude faster than comparable diffusion models, representing a superior processing paradigm for lossy audio restoration.
       </p>
     </section>
 
@@ -473,5 +473,6 @@
   <script src="assets/js/main.js"></script>
 </body>
 </html>
+
 
 
